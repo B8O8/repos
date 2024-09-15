@@ -10,7 +10,7 @@ export type UserUpdateDTO = {
   cashout: number;
   password?: string;         // Add password field for updates
   resetToken?: string | null;       // Token for password reset
-  resetTokenExpiry?: number | null; // Expiry for password reset token
+  resetTokenExpiry?: Date | null; // Expiry for password reset token
 };
 
 export type UserInsertDTO = {
@@ -27,7 +27,7 @@ export type UserInsertDTO = {
   dispensed: number;
   cashout: number;
   resetToken?: string;       // Optional reset token for new users
-  resetTokenExpiry?: number; // Optional token expiry for new users
+  resetTokenExpiry?: Date; // Optional token expiry for new users
 };
 
 export type UserGetDTO = {
@@ -53,5 +53,5 @@ export type UserGetDTO = {
   uplineLastName?: string;
   uplinePhoneNumber?: string;
   resetToken?: string;       // Token for password reset
-  resetTokenExpiry?: number; // Token expiry for password reset
+  resetTokenExpiry?: Date; // Token expiry for password reset
 };

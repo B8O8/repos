@@ -51,8 +51,7 @@ class UserService {
 
       // Generate reset token
       const resetToken = crypto.randomBytes(32).toString("hex");
-      const resetTokenExpiry = Date.now() + 3600000; // Token valid for 1 hour
-
+      const resetTokenExpiry = new Date(Date.now() + 3600000); // Token valid for 1 hour
 
       // Store the reset token and its expiration in the database
       await UserDTO.updateById(user.id, { resetToken, resetTokenExpiry });
@@ -68,6 +67,7 @@ class UserService {
   }
 
   // Reset password method
+  // Reset password method
   async resetPassword(
     userId: number,
     token: string,
@@ -75,11 +75,13 @@ class UserService {
   ): Promise<TGenericResponse> {
     try {
       const user = await UserDTO.getById(userId);
-     
+
+      // Check if the user exists, the token matches, and the token has not expired
       if (
         !user ||
         user.resetToken !== token ||
-        Date.now() > (user.resetTokenExpiry || 0)
+        !user.resetTokenExpiry || // Ensure resetTokenExpiry is not undefined
+        Date.now() > user.resetTokenExpiry.getTime() // Convert Date to timestamp for comparison
       ) {
         return {
           success: false,
@@ -102,7 +104,7 @@ class UserService {
         success: true,
         status: 200,
         data: "Password reset successfully",
-      }; // Change message field to data
+      };
     } catch (error: any) {
       return { success: false, status: 500, error: error.message };
     }
@@ -573,18 +575,28 @@ class UserService {
     return await UserDTO.insert(args);
   }
 
-  async validateResetToken(userId: number, token: string): Promise<TGenericResponse> {
+  // Validate the reset token
+  async validateResetToken(
+    userId: number,
+    token: string
+  ): Promise<TGenericResponse> {
     try {
       const user = await UserDTO.getById(userId);
-      
-      if (!user || user.resetToken !== token || Date.now() > (user.resetTokenExpiry || 0)) {
+
+      // Check if the user exists, the token matches, and the token has not expired
+      if (
+        !user ||
+        user.resetToken !== token ||
+        !user.resetTokenExpiry || // Ensure resetTokenExpiry is not undefined
+        Date.now() > user.resetTokenExpiry.getTime() // Convert Date to timestamp for comparison
+      ) {
         return {
           success: false,
           status: 400,
           error: "Invalid or expired token",
         };
       }
-  
+
       return {
         success: true,
         status: 200,
@@ -594,6 +606,7 @@ class UserService {
       return { success: false, status: 500, error: error.message };
     }
   }
+
   /*
   *** ################################### END REGION                #######################################
   --------------------------------------- GENERIC METHODS ONE LINERS --------------------------------------
