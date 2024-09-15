@@ -1,0 +1,14 @@
+:root {
+  --primary-bg: #050d31;
+  --text: #ffffff;
+  --label: #d3d3d3;
+  --disabled: #d5d5d5;
+  --menu-bg: #313443;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+    "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+}

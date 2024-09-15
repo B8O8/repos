@@ -1,0 +1,12 @@
+.container {
+    height: 10vh;
+    margin-top: 10vh;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.filterContainer{
+    width: 20vw;
+    margin-left: 5vw;
+}

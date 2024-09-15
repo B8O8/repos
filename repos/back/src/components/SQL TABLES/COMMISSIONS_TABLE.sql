@@ -1,0 +1,20 @@
+CREATE TABLE commissions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  email VARCHAR(255) NOT NULL,
+  firstName VARCHAR(255) NOT NULL,
+  lastName VARCHAR(255) NOT NULL,
+  phone VARCHAR(20),
+  country VARCHAR(50),
+  isVerified BOOLEAN NOT NULL,
+  md5Id INT NOT NULL,
+  totalTradedLots INT,
+  lots INT,
+  balanceUsd DECIMAL(18, 2),
+  equityUsd DECIMAL(18, 2),
+  commissionUsd DECIMAL(18, 2),
+  plClosedUsd DECIMAL(18, 2),
+  depositsUsd DECIMAL(18, 2),
+  withdrawalsUsd DECIMAL(18, 2),
+  netDepositsUsd DECIMAL(18, 2),
+  commissionDate DATE NOT NULL
+);

@@ -1,0 +1,416 @@
+.parentContainer {
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--profile-bg-color);
+  padding: 10px 20px;
+  transition: all 0.3s ease;
+}
+
+.navbarOpen {
+  height: 100vh;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 20px;
+}
+
+.logoContainer {
+  height: 80px;
+  width: 80px;
+}
+
+.logoContainer img {
+  /* height: 50px; */
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.menuButton {
+  display: none;
+  cursor: pointer;
+}
+
+.menuContainer {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  align-items: center;
+}
+
+.menuContainer.menuOpen {
+  flex-direction: column;
+  width: 100%;
+}
+
+.menuContainer li {
+  padding: 10px;
+  width: 100%;
+  text-align: left;
+}
+
+.profileContainer {
+  display: flex;
+  align-items: center;
+  /* margin-top: auto; */
+  width: 100%;
+  margin-left: 100px;
+}
+
+.profileImageContainer img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.menuButtonOpen {
+  display: inline-block;
+}
+
+.hamburger {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  width: 30px;
+  height: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.hamburger span {
+  display: block;
+  width: 100%;
+  height: 3px;
+  background-color: white;
+  transition: all 0.3s ease;
+}
+
+.hamburger.open span:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+
+.hamburger.open span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger.open span:nth-child(3) {
+  transform: rotate(-45deg) translate(5px, -5px);
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  position: relative;
+}
+
+.menuItem.active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 1px;
+  background-color: white;
+  transition: width 0.3s, left 0.3s;
+}
+
+.menuItem.active {
+  width: 100%;
+}
+
+.menuItem.active::after {
+  animation: expandLine 0.3s forwards;
+}
+
+@keyframes expandLine {
+  0% {
+    width: 0;
+    left: 50%;
+  }
+  50% {
+    width: 100%;
+    left: 0;
+  }
+  100% {
+    width: 100%;
+    left: 0;
+  }
+}
+
+.menuItem:not(.active)::after {
+  animation: contractLine 0.3s forwards;
+}
+
+@keyframes contractLine {
+  0% {
+    width: 100%;
+    left: 0;
+  }
+  50% {
+    width: 100%;
+    left: 0;
+  }
+  100% {
+    width: 0;
+    left: 50%;
+  }
+}
+
+.icon {
+  margin-right: 10px;
+}
+
+.text {
+  color: var(--menu-icon-color);
+  margin-left: 10px;
+  font-size: 16px;
+}
+
+@media (max-width: 768px) {
+  .menuButton {
+    display: inline-block;
+    text-align: center;
+  }
+  .profileContainer {
+    width: 100%;
+    margin-right: 100px;
+  }
+
+  .menuContainer {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    transition: max-height 0.3s ease-out;
+    overflow: hidden;
+    max-height: 0;
+  }
+
+  .menuContainer.menuOpen {
+    display: flex;
+    max-height: 500px;
+  }
+
+  .navbar {
+    justify-content: space-between;
+  }
+
+  .navbarOpen {
+    align-items: flex-start;
+  }
+
+  .menuButton {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+  }
+  .navbarOpen {
+    height: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px;
+  }
+}
+
+/* .parentContainer {
+  position: fixed;
+}
+.logoContainer {
+  width: 100%;
+}
+
+.logoContainer > img {
+  height: 100%;
+  width: 100%;
+}
+
+.menuContainer {
+  width: 100px;
+  position: relative;
+  height: 100vh;
+  background-color: black;
+  overflow: hidden;
+  transition: 250ms;
+}
+
+.menuContainer > ul {
+  text-align: center;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+.menuContainer > ul > li:nth-child(1) {
+  padding: 0;
+}
+
+.menuContainer > ul > li {
+  padding: 15px 0;
+  cursor: pointer;
+  list-style: none;
+}
+
+li > *,
+li > * > * {
+  font-size: 30px !important;
+  color: white;
+}
+
+.profileContainer {
+  width: 100%;
+  overflow: hidden;
+  border-top: 1px solid white;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  cursor: pointer;
+}
+
+.profileContainer > div {
+  width: 25%;
+  padding: 3px;
+  background-color: green;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.profileImageContainer {
+  width: 80px;
+  height: 50px;
+  border-radius: 100%;
+  border: 1px solid transparent;
+}
+
+.profileImageContainer > img {
+  width: 55px;
+  height: 55px;
+  border-radius: 100%;
+}
+
+.profileContainer > span {
+  font-size: 12px;
+  margin-top: 5px;
+  color: white;
+  font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+    "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+}
+
+@media (max-width: 768px) {
+  .menuContainer {
+    width: 50vw;
+  }
+} */
+
+/* .parentContainer {
+  position: fixed;
+}
+.logoContainer {
+  width: 100%;
+}
+
+.logoContainer > img {
+  height: 100%;
+  width: 100%;
+}
+
+.menuContainer {
+  width: 10vw;
+  position: relative;
+  height: 100vh;
+  background-color: var(--menu-bg);
+  overflow: hidden;
+  transition: 250ms;
+}
+
+.menuContainer > ul {
+  text-align: center;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  height: 80vh;
+}
+.menuContainer > ul > li:nth-child(1) {
+  padding: 0;
+}
+
+.menuContainer > ul > li {
+  padding: 15px 0;
+  cursor: pointer;
+  list-style: none;
+}
+
+li > *,
+li > * > * {
+  font-size: 30px !important;
+  color: white;
+}
+
+.profileContainer {
+  width: 100%;
+  overflow: hidden;
+  border-top: 1px solid white;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  cursor: pointer;
+}
+
+.profileContainer > div {
+  width: 25%;
+  padding: 3px;
+  background-color: green;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.profileImageContainer {
+  width: 80px;
+  height: 50px;
+  border-radius: 100%;
+  border: 1px solid transparent;
+}
+
+.profileImageContainer > img {
+  width: 55px;
+  height: 55px;
+  border-radius: 100%;
+}
+
+.profileContainer > span {
+  font-size: 12px;
+  margin-top: 5px;
+  color: white;
+  font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+    "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+}
+
+@media (max-width: 768px) {
+  .menuContainer {
+    width: 50vw;
+  }
+} */

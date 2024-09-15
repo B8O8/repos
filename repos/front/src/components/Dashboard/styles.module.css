@@ -1,0 +1,113 @@
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 12px;
+}
+
+.card:hover {
+  transform: translateY(-10px) scale(1.03);
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* General styles for grid layout */
+.gridContainer {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 25px;
+}
+
+/* Table style */
+
+/* Optional styles for the table */
+
+@media (max-width: 768px) {
+  .gridContainer {
+    flex-direction: column;
+  }
+}
+
+/* .gridContainer {
+  margin-top: 15px;
+  display: flex;
+  grid-template-columns: 1fr 2fr;
+  gap: 25px;
+}
+
+.gridContainer > div {
+  width: 100%;
+  height: 150px;
+  border-radius: 5px;
+  background-color: white;
+  color: black;
+  border: 1px solid lightgray;
+}
+
+.gridCardContainer {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  flex-direction: column;
+  padding: 15px;
+}
+
+.gridCardContainer > :nth-child(1) {
+  font-weight: bold;
+  font-size: 25px;
+}
+
+.gridCardContainer > :nth-child(2) {
+  font-size: 17px;
+  margin-top: 15px;
+}
+
+@media (max-width: 768px) {
+  .gridContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    margin-bottom: 25px;
+  }
+} */
+
+/* .gridContainer {
+    margin-top: 15px;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 25px;
+}
+
+.gridContainer > div {
+    width: 100%;
+    height: 200px;
+    border-radius: 5px;
+    background-color: #313443;
+    color: white;
+}
+
+.gridCardContainer {
+     display: flex;
+     justify-content: flex-start; 
+     align-items: flex-start;
+     flex-direction: column;
+     padding: 15px;
+}
+
+.gridCardContainer > :nth-child(1) {
+    font-weight: bold;
+    font-size: 25px;
+}
+
+.gridCardContainer > :nth-child(2) {
+    font-size: 17px;
+    margin-top: 15px;
+}
+
+@media (max-width: 768px) {
+    .gridContainer {
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+        margin-bottom: 25px;
+    }
+} */

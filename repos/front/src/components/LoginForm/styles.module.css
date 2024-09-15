@@ -1,0 +1,224 @@
+:root {
+  --primary-bg: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+  --primary-color: #4e73df;
+  --secondary-color: #6c757d;
+  --input-bg: #fff;
+  --input-border: #ced4da;
+  --input-focus-border: #4e73df;
+  --input-focus-shadow: rgba(78, 115, 223, 0.25);
+  --input-error-border: #dc3545;
+  --input-error-shadow: rgba(220, 53, 69, 0.25);
+  --text-color: #333;
+  --link-color: #4e73df;
+  --container-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+}
+
+.login-mainContainer {
+  /* background: var(--primary-bg); */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* height: 100vh; */
+  padding: 20px;
+  width: 90%;
+}
+
+.login-container {
+  background: #fff;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: var(--container-shadow);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.login-imageContainer {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.login-logo {
+  width: 80px;
+  height: auto;
+  border-radius: 50%;
+  border: 2px solid var(--primary-color);
+}
+
+.login-title {
+  margin: 0;
+  font-size: 24px;
+  color: var(--primary-color);
+  margin-bottom: 10px;
+}
+
+.login-subtitle {
+  margin: 0;
+  font-size: 16px;
+  color: var(--secondary-color);
+  margin-bottom: 30px;
+}
+
+.login-formGroup {
+  margin-bottom: 20px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+}
+
+.login-label {
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+.login-input {
+  width: calc(100% - 2px);
+  padding: 12px;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  background-color: var(--input-bg);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.login-input:focus {
+  border-color: var(--input-focus-border);
+  box-shadow: 0 0 0 0.2rem var(--input-focus-shadow);
+}
+
+.login-invalidInput {
+  border-color: var(--input-error-border);
+  box-shadow: 0 0 0 0.2rem var(--input-error-shadow);
+}
+
+.login-errorText {
+  color: var(--input-error-border);
+  margin-top: 5px;
+  font-size: 14px;
+}
+
+.login-button {
+  width: calc(100% - 2px);
+  padding: 12px;
+  background-color: var(--primary-color);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+  box-sizing: border-box;
+}
+
+.login-button:disabled {
+  background-color: var(--secondary-color);
+  cursor: not-allowed;
+}
+
+.login-button:not(:disabled):hover {
+  background-color: #3751d0;
+  transform: translateY(-2px);
+}
+
+.login-forgotPassword {
+  text-align: right;
+  margin-bottom: 15px;
+}
+
+.login-forgotPassword a {
+  color: var(--link-color);
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.login-forgotPassword a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .login-container {
+    padding: 30px;
+  }
+
+  .login-input {
+    padding: 10px;
+  }
+
+  .login-button {
+    padding: 10px;
+  }
+}
+
+/* .mainContainer {
+  background-color: var(--primary-bg);
+  display: flex;
+  justify-content: center;
+  height: 100vh;
+}
+.container {
+  height: 100vh;
+  width: 60vw;
+}
+
+.imageContainer {
+  height: 45vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.imageContainer > img {
+  width: 50%;
+  height: 100%;
+  transform: translateX(-5%) translateY(-10%);
+}
+
+.formContainer {
+  margin: auto;
+  width: 30%;
+  height: 55vh;
+}
+
+@media (max-width: 768px) {
+  .container {
+    width: 100%;
+  }
+  .imageContainer > img {
+    width: 120%;
+    transform: translateX(0%) translateY(0%);
+  }
+  .formContainer {
+    width: 70%;
+  }
+  .formContainer > *:last-child {
+    margin-top: 20px;
+  }
+} */
+/* .mainContainer {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    background-color: var(--primary-bg);
+    justify-content: center;
+}
+.container {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 5px;
+}
+
+.container > img {
+    height: 50vh; 
+    width: 30vw;
+}
+
+.submitButton {
+    margin-top: 25px;
+    width: 100%;
+    background-color: red;
+    height: 5vh;
+} */
