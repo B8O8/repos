@@ -50,11 +50,22 @@ class UserDTO {
   constructUpdateParams(updateArgs: Partial<UserUpdateDTO>): string {
     let str = ``;
     for (const [key, value] of Object.entries(updateArgs)) {
-      str += `${key}='${value}',`;
+      if (value === null) {
+        // Handle null values by setting the field to NULL (without quotes)
+        str += `${key}=NULL,`;
+      } else if (typeof value === 'string') {
+        // Escape string values and wrap in single quotes
+        str += `${key}='${value}',`;
+      } else {
+        // Handle numbers and other data types directly
+        str += `${key}=${value},`;
+      }
     }
+    // Remove the last comma
     str = str.slice(0, -1);
     return str;
   }
+  
 
   async updateById(
     id: number,
