@@ -42,73 +42,75 @@ class UserService {
   }
 
   // Request password reset
-  async requestPasswordReset(email: string): Promise<TGenericResponse> {
-    try {
-      const user = await UserDTO.getByEmail(email);
-      if (!user) {
-        return { success: false, status: 404, error: "User not found" };
-      }
-
-      // Generate reset token
-      const resetToken = crypto.randomBytes(32).toString("hex");
-      const resetTokenExpiry = new Date(Date.now() + 3600000); // Token valid for 1 hour
-
-      // Store the reset token and its expiration in the database
-      await UserDTO.updateById(user.id, { resetToken, resetTokenExpiry });
-
-      // Send the reset email
-      const resetLink = `https://masari.me/change-password/${resetToken}/${user.id}`;
-      await EmailService.sendPasswordResetEmail(user.email, resetLink);
-
-      return { success: true, status: 200, data: "Reset email sent" }; // Changed message to data
-    } catch (error: any) {
-      return { success: false, status: 500, error: error.message };
+async requestPasswordReset(email: string): Promise<TGenericResponse> {
+  try {
+    const user = await UserDTO.getByEmail(email);
+    if (!user) {
+      return { success: false, status: 404, error: "User not found" };
     }
+
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString("hex");
+
+    // Generate reset token expiry and convert to MySQL DATETIME format
+    const resetTokenExpiry = new Date(Date.now() + 3600000).toISOString().slice(0, 19).replace('T', ' '); // Token valid for 1 hour in 'YYYY-MM-DD HH:MM:SS' format
+
+    // Store the reset token and its expiration in the database
+    await UserDTO.updateById(user.id, { resetToken, resetTokenExpiry });
+
+    // Send the reset email
+    const resetLink = `https://masari.me/change-password/${resetToken}/${user.id}`;
+    await EmailService.sendPasswordResetEmail(user.email, resetLink);
+
+    return { success: true, status: 200, data: "Reset email sent" };
+  } catch (error: any) {
+    return { success: false, status: 500, error: error.message };
   }
+}
+
 
   // Reset password method
-  // Reset password method
-  async resetPassword(
-    userId: number,
-    token: string,
-    newPassword: string
-  ): Promise<TGenericResponse> {
-    try {
-      const user = await UserDTO.getById(userId);
+async resetPassword(
+  userId: number,
+  token: string,
+  newPassword: string
+): Promise<TGenericResponse> {
+  try {
+    const user = await UserDTO.getById(userId);
 
-      // Check if the user exists, the token matches, and the token has not expired
-      if (
-        !user ||
-        user.resetToken !== token ||
-        !user.resetTokenExpiry || // Ensure resetTokenExpiry is not undefined
-        Date.now() > user.resetTokenExpiry.getTime() // Convert Date to timestamp for comparison
-      ) {
-        return {
-          success: false,
-          status: 400,
-          error: "Invalid or expired token",
-        };
-      }
-
-      // Hash the new password
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-      // Update password and clear the reset token
-      await UserDTO.updateById(userId, {
-        password: hashedPassword,
-        resetToken: null,
-        resetTokenExpiry: null,
-      });
-
+    if (
+      !user ||
+      user.resetToken !== token ||
+      !user.resetTokenExpiry ||
+      Date.now() > new Date(user.resetTokenExpiry).getTime() // Convert string to Date for comparison
+    ) {
       return {
-        success: true,
-        status: 200,
-        data: "Password reset successfully",
+        success: false,
+        status: 400,
+        error: "Invalid or expired token",
       };
-    } catch (error: any) {
-      return { success: false, status: 500, error: error.message };
     }
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password and clear the reset token
+    await UserDTO.updateById(userId, {
+      password: hashedPassword,
+      resetToken: null,
+      resetTokenExpiry: null,
+    });
+
+    return {
+      success: true,
+      status: 200,
+      data: "Password reset successfully",
+    };
+  } catch (error: any) {
+    return { success: false, status: 500, error: error.message };
   }
+}
+
 
   async getAllUsers(): Promise<TGenericResponse> {
     const users = await UserDTO.getAll();
@@ -588,7 +590,7 @@ class UserService {
         !user ||
         user.resetToken !== token ||
         !user.resetTokenExpiry || // Ensure resetTokenExpiry is not undefined
-        Date.now() > user.resetTokenExpiry.getTime() // Convert Date to timestamp for comparison
+        Date.now() > new Date(user.resetTokenExpiry).getTime() // Convert Date to timestamp for comparison
       ) {
         return {
           success: false,
