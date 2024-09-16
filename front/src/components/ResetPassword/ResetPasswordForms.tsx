@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AccountApiService from "../../utils/apis/accounts";
 import { ToastType, notify } from "../../utils/helpers";
-import "./ResetPasswordForm.css"; // Import the CSS file
+import styles from "./styles.module.css"; // Import the CSS module
 
 const ResetPasswordForm = () => {
   const navigate = useNavigate();
@@ -71,14 +71,14 @@ const ResetPasswordForm = () => {
   }
 
   if (isTokenValid === null) {
-    return <div className="loading-text">Validating reset link...</div>; // Show a loading message during token validation
+    return <div className={styles.loadingText}>Validating reset link...</div>; // Show a loading message during token validation
   }
 
   return (
-    <div className="reset-password-container">
-      <div className="reset-password-card">
+    <div className={styles.resetPasswordContainer}>
+      <div className={styles.resetPasswordCard}>
         <h2>Reset Password</h2>
-        {error && <p className="error-message">{error}</p>}
+        {error && <p className={styles.errorMessage}>{error}</p>}
         <form onSubmit={handlePasswordChange}>
           <div>
             <label>New Password</label>
@@ -106,7 +106,7 @@ const ResetPasswordForm = () => {
               minLength={6} // Enforce minimum password length on input field
             />
           </div>
-          <button type="submit">Change Password</button>
+          <button className={styles.resetPasswordButton} type="submit">Change Password</button>
         </form>
       </div>
     </div>
