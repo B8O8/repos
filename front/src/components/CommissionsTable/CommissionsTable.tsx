@@ -184,30 +184,34 @@ export default function CommissionsTable() {
             disabled={false}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={4}>
-          <CustomButton
-            title="UPLOAD COMMISSIONS"
-            onSubmit={() => navigate("/upload-commissions")}
-            isLoading={false}
-            disabled={false}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={4}>
-          <CustomButton
-            title="SEND MONTHLY EMAIL"
-            onSubmit={() => navigate("/send-monthly-email")}
-            isLoading={false}
-            disabled={false}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={4}>
-          <CustomButton
-            title="UPLOAD COMMISSION TEST"
-            onSubmit={() => navigate("/upload-commissions-test")}
-            isLoading={false}
-            disabled={false}
-          />
-        </Grid>
+        {isAdmin && (
+          <Grid container spacing={2} alignItems="center" style={{ marginTop: "5px" }}>
+            <Grid item xs={12} sm={6} md={4}>
+              <CustomButton
+                title="UPLOAD COMMISSIONS"
+                onSubmit={() => navigate("/upload-commissions")}
+                isLoading={false}
+                disabled={false}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <CustomButton
+                title="SEND MONTHLY EMAIL"
+                onSubmit={() => navigate("/send-monthly-email")}
+                isLoading={false}
+                disabled={false}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <CustomButton
+                title="UPLOAD COMMISSION TEST"
+                onSubmit={() => navigate("/upload-commissions-test")}
+                isLoading={false}
+                disabled={false}
+              />
+            </Grid>
+          </Grid>
+        )}
       </Grid>
 
       {/* Table */}

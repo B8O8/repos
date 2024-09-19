@@ -124,6 +124,15 @@ function Dashboard() {
     page * rowsPerPage + rowsPerPage
   );
 
+  const calculateTotalWeeklyCommissions = () => {
+    return filteredAdminData.reduce((total, item) => total + parseFloat(item.weeklyCommission || 0), 0).toFixed(2);
+  };
+
+  // Calculate the total of monthly commissions
+  const calculateTotalMonthlyCommissions = () => {
+    return filteredAdminData.reduce((total, item) => total + parseFloat(item.monthlyCommission || 0), 0).toFixed(2);
+  };
+
   const exportToExcel = () => {
     const ws = XLSX.utils.json_to_sheet(filteredAdminData.map(userCommission => ({
       User: `${userCommission.firstName} ${userCommission.lastName}`,
@@ -218,6 +227,7 @@ function Dashboard() {
                     <TableCell align="left">MT5 ID</TableCell>
                     <TableCell align="left">Broker ID</TableCell>
                     <TableCell align="left">Weekly Commission</TableCell>
+                    <TableCell align="left">Monthly Commission</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -231,8 +241,20 @@ function Dashboard() {
                       <TableCell align="left">
                         {`$${parseFloat(userCommission.weeklyCommission || 0).toFixed(2)}`}
                       </TableCell>
+                      <TableCell align="left">
+                        {`$${parseFloat(userCommission.monthlyCommission || 0).toFixed(2)}`}
+                      </TableCell>
                     </TableRow>
                   ))}
+                  {/* Total row */}
+                   <TableRow>
+                    <TableCell colSpan={3} align="right">Total:</TableCell>
+                    <TableCell align="left">
+                      {`$${calculateTotalWeeklyCommissions()}`}
+                    </TableCell>
+                    <TableCell align="left">{`$${calculateTotalMonthlyCommissions()}`}</TableCell>
+                  </TableRow>
+                  
                 </TableBody>
               </Table>
             </TableContainer>
