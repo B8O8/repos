@@ -27,7 +27,6 @@
 }
 
 .logoContainer img {
-  /* height: 50px; */
   width: 100%;
   height: 100%;
   cursor: pointer;
@@ -60,7 +59,6 @@
 .profileContainer {
   display: flex;
   align-items: center;
-  /* margin-top: auto; */
   width: 100%;
   margin-left: 100px;
 }
@@ -182,6 +180,7 @@
     display: inline-block;
     text-align: center;
   }
+
   .profileContainer {
     width: 100%;
     margin-right: 100px;
@@ -214,6 +213,7 @@
     top: 20px;
     right: 20px;
   }
+
   .navbarOpen {
     height: 100%;
     flex-direction: column;
@@ -221,6 +221,7 @@
     padding: 20px;
   }
 }
+
 
 /* .parentContainer {
   position: fixed;

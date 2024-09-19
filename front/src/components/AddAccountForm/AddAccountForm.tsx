@@ -8,6 +8,10 @@ import {
   Typography,
   Fade,
   Zoom,
+  Grid,
+  Select,
+  InputLabel,
+  FormControl,
 } from "@mui/material";
 import classes from "./styles.module.css";
 import { ToastType, isUserAdmin, notify } from "../../utils/helpers";
@@ -28,7 +32,6 @@ function AddAccountForm() {
   const [downlineIds, setDownlineIds] = useState<number[]>([]);
   const [allAccounts, setAllAccounts] = useState<IUserGet[]>([]);
   const [emailError, setEmailError] = useState<string>("");
-  const isMobile = window.innerWidth <= 768;
 
   useEffect(() => {
     if (isUserAdmin()) fetchAllAccounts();
@@ -91,119 +94,117 @@ function AddAccountForm() {
               Add Account
             </Typography>
             <form onSubmit={handleSubmit} className={classes.form}>
-              <TextField
-                label="MT5 ID"
-                type="string"
-                name="md5Id"
-                value={formData.md5Id}
-                onChange={handleChange}
-                variant="filled"
-                fullWidth
-                margin="normal"
-              />
-              <TextField
-                label="Email"
-                type="email"
-                name="email"
-                error={!!emailError}
-                helperText={emailError}
-                value={formData.email}
-                onChange={handleChange}
-                required
-                variant="filled"
-                fullWidth
-                margin="normal"
-              />
-              <TextField
-                label="Phone number"
-                type="number"
-                name="phoneNumber"
-                value={formData.phoneNumber}
-                onChange={handleChange}
-                required
-                variant="filled"
-                fullWidth
-                margin="normal"
-              />
-              <TextField
-                label="Username"
-                type="text"
-                name="username"
-                value={formData.username}
-                onChange={handleChange}
-                required
-                variant="filled"
-                fullWidth
-                margin="normal"
-              />
-              <TextField
-                label="First Name"
-                type="text"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleChange}
-                variant="filled"
-                fullWidth
-                margin="normal"
-              />
-              <TextField
-                label="Last Name"
-                type="text"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleChange}
-                variant="filled"
-                fullWidth
-                margin="normal"
-              />
-              {isUserAdmin() && (
-                <>
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
                   <TextField
-                    sx={{
-                      width: "100%",
-                      marginTop: "15px",
-                    }}
+                    label="MT5 ID"
+                    name="md5Id"
+                    value={formData.md5Id}
+                    onChange={handleChange}
+                    variant="filled"
                     fullWidth
-                    label="Upline ID"
-                    select
-                    value={uplineId}
-                    onChange={(e) => {
-                      setUplineId(parseInt(e.target.value));
-                      setDownlineIds([]);
-                    }}
-                  >
-                    {allAccounts.map((account) => (
-                      <MenuItem key={account.id} value={account.id}>
-                        {account.username}
-                      </MenuItem>
-                    ))}
-                  </TextField>
+                    required
+                  />
+                </Grid>
+                <Grid item xs={12}>
                   <TextField
-                    select
-                    sx={{
-                      width: "100%",
-                      marginTop: "15px",
-                    }}
+                    label="Email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    error={!!emailError}
+                    helperText={emailError}
+                    variant="filled"
                     fullWidth
-                    disabled={typeof uplineId === "undefined"}
-                    label="Downline IDs"
-                    value={downlineIds}
-                    SelectProps={{
-                      multiple: true,
-                      value: downlineIds,
-                      onChange: handleMultiSelectChange,
-                    }}
-                  >
-                    {allAccounts
-                      .filter((e) => e.uplineId === uplineId)
-                      .map((account) => (
-                        <MenuItem key={account.id} value={account.id}>
-                          {account.username}
-                        </MenuItem>
-                      ))}
-                  </TextField>
-                </>
-              )}
+                    required
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    label="Phone number"
+                    name="phoneNumber"
+                    value={formData.phoneNumber}
+                    onChange={handleChange}
+                    variant="filled"
+                    fullWidth
+                    required
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    label="Username"
+                    name="username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    variant="filled"
+                    fullWidth
+                    required
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="First Name"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    variant="filled"
+                    fullWidth
+                    required
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Last Name"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    variant="filled"
+                    fullWidth
+                    required
+                  />
+                </Grid>
+
+                {isUserAdmin() && (
+                  <>
+                    <Grid item xs={12}>
+                      <FormControl fullWidth variant="filled">
+                        <InputLabel>Upline ID</InputLabel>
+                        <Select
+                          value={uplineId || ""}
+                          onChange={(e) => {
+                            setUplineId(parseInt(e.target.value as string));
+                            setDownlineIds([]);
+                          }}
+                        >
+                          {allAccounts.map((account) => (
+                            <MenuItem key={account.id} value={account.id}>
+                              {account.username}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                    <Grid item xs={12}>
+                      <FormControl fullWidth variant="filled" disabled={!uplineId}>
+                        <InputLabel>Downline IDs</InputLabel>
+                        <Select
+                          multiple
+                          value={downlineIds}
+                          onChange={handleMultiSelectChange}
+                        >
+                          {allAccounts
+                            .filter((e) => e.uplineId === uplineId)
+                            .map((account) => (
+                              <MenuItem key={account.id} value={account.id}>
+                                {account.username}
+                              </MenuItem>
+                            ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                  </>
+                )}
+              </Grid>
               <Button
                 className={classes.submitButton}
                 sx={{ marginTop: "25px" }}

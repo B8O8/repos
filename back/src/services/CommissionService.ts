@@ -118,24 +118,31 @@ class CommissionService {
 
   async handleCsvUpload(buffer: string, date: Date): Promise<TGenericResponse> {
     const formattedDate = asFormattedDate(date, true);
+
+    // First, handle updating the broker IDs
+    await this.updateBrokerIdFromCsv(buffer);
+
     const stream = Readable.from(buffer);
     const rows: TCommissionRecordSet[] = [];
-    
+
     stream
       .pipe(csvParser())
       .on("data", (row) => {
-        const normalized = CommissionService.normalizeRowData(row, formattedDate);
+        const normalized = CommissionService.normalizeRowData(
+          row,
+          formattedDate
+        );
         if (normalized) rows.push(normalized);
       })
       .on("end", async () => {
         const processedEmails: string[] = [];
-  
+
         await Promise.all(
           rows.map(async (row) => {
             const email = row.email;
             const emailExists = await UserDTO.checkEmail(email);
             if (!emailExists) return;
-  
+
             try {
               const user = await UserDTO.getByEmail(email);
               const dispensed = user.dispensed;
@@ -143,20 +150,24 @@ class CommissionService {
               const userCashout = user.cashout || 0; // Get cashout, default to 0
               const recordDispensedCommission =
                 ((row?.commissionUSD || 0) * dispensed) / user.charged;
-  
+
               // Calculate cashout value
-              const userCashoutValue = (recordDispensedCommission * userCashout) / user.charged;
-  
+              const userCashoutValue =
+                (recordDispensedCommission * userCashout) / user.charged;
+
               // Insert the commission record for the user, including the cashout
               await CommissionRecordDTO.insert({
                 ...row,
                 dispensedCommissionUSD: recordDispensedCommission,
                 userCashoutUSD: userCashoutValue,
               });
-  
-              const uplines = await RelationshipsService.getUplinesAsUsers(userId, 1000);
+
+              const uplines = await RelationshipsService.getUplinesAsUsers(
+                userId,
+                1000
+              );
               const commissions: TUserCommissionSet[] = [];
-  
+
               // Add user cashout as their own commission if applicable
               if (userCashout > 0) {
                 commissions.push({
@@ -171,13 +182,14 @@ class CommissionService {
                   commissionUSD: row.commissionUSD,
                 });
               }
-  
+
               // Process uplines' commissions
               uplines.forEach((upline) => {
                 if (recordDispensedCommission && upline.commissionChunk) {
                   const calculatedCommission =
-                    (recordDispensedCommission * upline.commissionChunk) / dispensed;
-  
+                    (recordDispensedCommission * upline.commissionChunk) /
+                    dispensed;
+
                   commissions.push({
                     uplineId: upline.id,
                     downlineId: userId,
@@ -191,13 +203,16 @@ class CommissionService {
                   });
                 }
               });
-  
+
               // Insert all commissions (user + uplines)
               await UserCommissionDTO.insertUserCommissions(commissions);
-  
+
               // If email not already processed, send one combined email
               if (!processedEmails.includes(user.email)) {
-                const userCommissions = await this.getCommissions(user.email, formattedDate);
+                const userCommissions = await this.getCommissions(
+                  user.email,
+                  formattedDate
+                );
                 await EmailService.sendDailyCommissionEmail(
                   user.email,
                   user.username,
@@ -206,19 +221,80 @@ class CommissionService {
                 );
                 processedEmails.push(user.email); // Mark email as processed
               }
-  
             } catch (error) {
               console.error("Error processing row:", error);
             }
           })
         );
       });
-  
+
     return {
       success: true,
       status: 200,
       data: "ok",
     };
+  }
+
+  async updateBrokerIdFromCsv(buffer: string): Promise<TGenericResponse> {
+    return new Promise<TGenericResponse>((resolve, reject) => {
+      const stream = Readable.from(buffer);
+      const updates: Array<{ email: string; brokerId: string }> = [];
+
+      stream
+        .pipe(
+          csvParser({
+            mapHeaders: ({ header }) => header.trim().toLowerCase(), // Normalize headers
+          })
+        )
+        .on("data", (row) => {
+          const email = row.email;
+          const brokerId = String(row.id);
+
+          // Only enqueue update if both email and brokerId are present
+          if (email && brokerId) {
+            updates.push({ email, brokerId });
+          }
+        })
+        .on("end", async () => {
+          // Perform database updates in batches or individually based on your preference
+          try {
+            const results = await Promise.all(
+              updates.map(async ({ email, brokerId }) => {
+                const user = await UserDTO.getByEmail(email);
+                if (
+                  user &&
+                  (!user.brokerId || user.brokerId.toString().trim() === "")
+                ) {
+                  return UserDTO.updateBrokerId(user.id, brokerId);
+                }
+                return false;
+              })
+            );
+
+            // Log the outcome of the updates
+            const updatedCount = results.filter((result) => result).length;
+
+            resolve({
+              success: true,
+              status: 200,
+              data: `Broker IDs updated for ${updatedCount} users.`,
+            });
+          } catch (error) {
+            reject({
+              success: false,
+              status: 500,
+              data: "Failed to update broker IDs due to an internal error.",
+            });
+          }
+        })
+        .on("error", (error) => {
+          reject({
+            success: false,
+            status: 500,
+            data: "Error processing CSV data.",
+          });
+        });
+    });
   }
 
   async getAll(): Promise<TGenericResponse> {
@@ -230,53 +306,6 @@ class CommissionService {
     };
   }
 
-  // async handleCsvTest(buffer: string): Promise<TGenericResponse> {
-  //   const stream = Readable.from(buffer);
-  //   const rows: { Level: string; Email: string }[] = []; // Store levels and emails from the CSV
-  //   const nonExistentUsers: string[] = [];
-
-  //   // Function to clean the keys (removes all whitespace and trims)
-  //   function cleanKey(key: string): string {
-  //     return key.replace(/\s+/g, "").trim();
-  //   }
-
-  //   await new Promise<void>((resolve, reject) => {
-  //     stream
-  //       .pipe(csvParser())
-
-  //       .on("data", (row: Record<string, string>) => {
-  //         // Access the cleaned keys explicitly, ensuring correct mapping
-  //         const levelKey = cleanKey("Level");
-  //         const emailKey = cleanKey("Email");
-
-  //         const level = row[levelKey] || row[Object.keys(row)[0]]; // Fallback if Level is missing
-  //         const email = row[emailKey];
-
-  //         if (email) {
-  //           rows.push({ Level: level, Email: email });
-  //         }
-  //       })
-  //       .on("end", async () => {
-  //         for (const { Level, Email } of rows) {
-  //           if (Level === "direct") {
-  //             const emailExists = await UserDTO.checkEmail(Email);
-  //             if (!emailExists) {
-  //               nonExistentUsers.push(Email);
-  //             }
-  //           }
-  //         }
-  //         resolve(); // Resolve when processing is complete
-  //       })
-  //       .on("error", (error: Error) => reject(error)); // Handle errors
-  //   });
-
-  //   return {
-  //     success: true,
-  //     status: 200,
-  //     data: nonExistentUsers,
-  //   };
-  // }
-
   async handleCsvTest(buffer: string): Promise<TGenericResponse> {
     const stream = Readable.from(buffer);
     const rows: {
@@ -285,6 +314,7 @@ class CommissionService {
       LastName: string;
       Email: string;
       Phone: string;
+      ID: string;
       Country: string;
       IsVerified: string;
       AccountLogins: string;
@@ -298,54 +328,53 @@ class CommissionService {
       WithdrawalsUSD: string;
       NetDepositsUSD: string;
       LastTradeDate: string;
+      CreatedAt: string;
+      FirstDepositDate: string;
+      FirstDepositUSD: string;
     }[] = []; // Store all data from the CSV
     const nonExistentUsers: Record<string, string>[] = []; // Store all field data for non-existent users
-  
+
     const cleanedHeaders: Record<string, string> = {}; // Store cleaned header mappings
-  
+
     // Clean the keys from the CSV
     function cleanKey(key: string): string {
       return key.replace(/[^\w]/g, "").trim().toLowerCase();
     }
-  
+
     await new Promise<void>((resolve, reject) => {
       stream
         .pipe(csvParser())
-        .on("headers", (headers: string[]) => {  // Specify the type of 'headers' as an array of strings
-         
-  
+        .on("headers", (headers: string[]) => {
           // Create a mapping of cleaned headers to original headers
           headers.forEach((header: string) => {
             cleanedHeaders[cleanKey(header)] = header; // Map cleaned key to original key
           });
-  
-         
         })
         .on("data", (row: Record<string, string>) => {
-          
-  
           // Access the row values using cleaned headers
-          const level = row[cleanedHeaders['level']];
-          const firstName = row[cleanedHeaders['firstname']];
-          const lastName = row[cleanedHeaders['lastname']];
-          const email = row[cleanedHeaders['email']];
-          const phone = row[cleanedHeaders['phone']];
-          const country = row[cleanedHeaders['country']];
-          const lots = row[cleanedHeaders['lots']];
-          const balanceUSD = row[cleanedHeaders['balanceusd']];
-          const accountLogins = row[cleanedHeaders['accountlogins']];
-          const totalTradedLots = row[cleanedHeaders['totaltradedlots']];
-          const equityUSD = row[cleanedHeaders['equityusd']];
-          const commissionUSD = row[cleanedHeaders['commissionusd']];
-          const plClosedUSD = row[cleanedHeaders['plclosedusd']];
-          const depositsUSD = row[cleanedHeaders['depositsusd']];
-          const withdrawalsUSD = row[cleanedHeaders['withdrawalsusd']];
-          const netDepositsUSD = row[cleanedHeaders['netdepositsusd']];
-          const lastTradeDate = row[cleanedHeaders['lasttradedate']];
-          const isVerified = row[cleanedHeaders['isverified']];
-  
-        
-  
+          const level = row[cleanedHeaders["level"]];
+          const firstName = row[cleanedHeaders["firstname"]];
+          const lastName = row[cleanedHeaders["lastname"]];
+          const email = row[cleanedHeaders["email"]];
+          const phone = row[cleanedHeaders["phone"]];
+          const id = row[cleanedHeaders["id"]];
+          const country = row[cleanedHeaders["country"]];
+          const lots = row[cleanedHeaders["lots"]];
+          const balanceUSD = row[cleanedHeaders["balanceusd"]];
+          const accountLogins = row[cleanedHeaders["accountlogins"]];
+          const totalTradedLots = row[cleanedHeaders["totaltradedlots"]];
+          const equityUSD = row[cleanedHeaders["equityusd"]];
+          const commissionUSD = row[cleanedHeaders["commissionusd"]];
+          const plClosedUSD = row[cleanedHeaders["plclosedusd"]];
+          const depositsUSD = row[cleanedHeaders["depositsusd"]];
+          const withdrawalsUSD = row[cleanedHeaders["withdrawalsusd"]];
+          const netDepositsUSD = row[cleanedHeaders["netdepositsusd"]];
+          const lastTradeDate = row[cleanedHeaders["lasttradedate"]];
+          const isVerified = row[cleanedHeaders["isverified"]];
+          const createdAt = row[cleanedHeaders["createdat"]];
+          const firstDepositDate = row[cleanedHeaders["firstdepositdate"]];
+          const firstDepositUSD = row[cleanedHeaders["firstdepositusd"]];
+
           // Ensure all fields are captured, even if they are empty in the CSV
           rows.push({
             Level: level || "N/A",
@@ -353,6 +382,7 @@ class CommissionService {
             LastName: lastName || "N/A",
             Email: email || "N/A",
             Phone: phone || "N/A",
+            ID: id || "N/A",
             Country: country || "N/A",
             Lots: lots || "0",
             AccountLogins: accountLogins || "0",
@@ -366,13 +396,12 @@ class CommissionService {
             NetDepositsUSD: netDepositsUSD || "0",
             LastTradeDate: lastTradeDate || "N/A",
             IsVerified: isVerified || "No",
+            CreatedAt: createdAt || "N/A",
+            FirstDepositDate: firstDepositDate || "N/A",
+            FirstDepositUSD: firstDepositUSD || "0",
           });
-  
-          
         })
         .on("end", async () => {
-          
-  
           for (const row of rows) {
             if (row.Level === "direct") {
               const emailExists = await UserDTO.checkEmail(row.Email);
@@ -382,26 +411,19 @@ class CommissionService {
               }
             }
           }
-  
-         
           resolve(); // Resolve when processing is complete
         })
         .on("error", (error: Error) => {
-          
           reject(error);
         }); // Handle errors
     });
-  
-  
+
     return {
       success: true,
       status: 200,
-      data: nonExistentUsers, // Return full data of non-existent users
+      data: nonExistentUsers, // Return full data of non-existent users, including ID
     };
   }
-  
-  
-  
 
   async get(id: number): Promise<TGenericResponse> {
     const commissions = await UserCommissionDTO.get(id);
@@ -419,25 +441,28 @@ class CommissionService {
     from: string,
     to: string
   ): Promise<TGenericResponse> {
-    const allUplinesThatGotCommission = await CommissionService.getAllUplinesThatGotCommission(from, to);
-  
+    const allUplinesThatGotCommission =
+      await CommissionService.getAllUplinesThatGotCommission(from, to);
+
     await Promise.all(
       allUplinesThatGotCommission.map(async (uplineId) => {
         try {
           const user = await UserDTO.getById(uplineId);
-          
+
           // Get the user's own commissions (cashout + downline commissions)
-          const commissions = await UserCommissionDTO.getByUplineIdInTimeInterval(
-            user.id,
-            from,
-            to
-          );
-  
+          const commissions =
+            await UserCommissionDTO.getByUplineIdInTimeInterval(
+              user.id,
+              from,
+              to
+            );
+
           // Check if the user has a cashout
-          const userCashoutCommission = commissions.find(
-            (commission) => commission.uplineId === commission.downlineId
-          )?.commissionValue || 0;
-  
+          const userCashoutCommission =
+            commissions.find(
+              (commission) => commission.uplineId === commission.downlineId
+            )?.commissionValue || 0;
+
           // Combine commissions with the user's own cashout (if applicable)
           await EmailService.sendMonthlyCommissionEmail(
             user.email,
@@ -452,7 +477,7 @@ class CommissionService {
         }
       })
     );
-  
+
     return {
       success: true,
       status: 200,
@@ -460,7 +485,6 @@ class CommissionService {
     };
   }
 
-  
   async getAllUsersCommissions(
     weekStart: string,
     weekEnd: string,
@@ -470,47 +494,59 @@ class CommissionService {
     try {
       // Fetch all users
       const users = await UserDTO.getAll();
-  
+
       // Prepare the data for each user (monthly and weekly commissions)
       const allUserCommissions = await Promise.all(
         users.map(async (user) => {
           // Get weekly commissions for this user
-          const weeklyCommissions = await UserCommissionDTO.getByUplineIdInTimeRange(
-            user.id,
-            weekStart,
-            weekEnd
-          );
-  
+          const weeklyCommissions =
+            await UserCommissionDTO.getByUplineIdInTimeRange(
+              user.id,
+              weekStart,
+              weekEnd
+            );
+
           // Get monthly commissions for this user
-          const monthlyCommissions = await UserCommissionDTO.getByUplineIdInTimeRange(
-            user.id,
-            monthStart,
-            monthEnd
-          );
-  
+          const monthlyCommissions =
+            await UserCommissionDTO.getByUplineIdInTimeRange(
+              user.id,
+              monthStart,
+              monthEnd
+            );
+
           // Sum up the commissions correctly (convert to number before summing)
           const totalWeeklyCommission = weeklyCommissions.reduce(
-            (acc, curr) => acc + (typeof curr.commissionValue === "number" ? curr.commissionValue : parseFloat(curr.commissionValue) || 0),
+            (acc, curr) =>
+              acc +
+              (typeof curr.commissionValue === "number"
+                ? curr.commissionValue
+                : parseFloat(curr.commissionValue) || 0),
             0
           );
-  
+
           const totalMonthlyCommission = monthlyCommissions.reduce(
-            (acc, curr) => acc + (typeof curr.commissionValue === "number" ? curr.commissionValue : parseFloat(curr.commissionValue) || 0),
+            (acc, curr) =>
+              acc +
+              (typeof curr.commissionValue === "number"
+                ? curr.commissionValue
+                : parseFloat(curr.commissionValue) || 0),
             0
           );
-  
+
           // Return the result for this user
           return {
             userId: user.id,
             username: user.username,
             firstName: user.firstName,
             lastName: user.lastName,
+            mt5Id: user.md5Id,
+            brokerId: user.brokerId,
             weeklyCommission: totalWeeklyCommission, // Return the summed value as a number
             monthlyCommission: totalMonthlyCommission, // Return the summed value as a number
           };
         })
       );
-  
+
       return {
         success: true,
         status: 200,
@@ -521,12 +557,8 @@ class CommissionService {
         success: false,
         status: 500,
         error: { message: "Error fetching commissions for users." },
-        };
+      };
     }
   }
-  
-  
-  
-  
 }
 export default new CommissionService();

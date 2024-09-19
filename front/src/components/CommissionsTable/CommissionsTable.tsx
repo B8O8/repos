@@ -15,6 +15,7 @@ import {
   TableRow,
   TextField,
   TablePagination,
+  Grid,
 } from "@mui/material";
 import {
   ToastType,
@@ -26,55 +27,32 @@ import { useNavigate } from "react-router-dom";
 import { IUserGet } from "../../utils/interfaces/IUser";
 import AccountApiService from "../../utils/apis/accounts";
 import CustomButton from "../GenericComponents/CustomButton";
-import { useMediaQuery } from "@mui/material";
-
-const tableRowOddSx = {
-  color: "black",
-  backgroundColor: "white",
-  whiteSpace: "nowrap",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-  width: "200px",
-};
-const tableRowEvenSx = {
-  backgroundColor: "#D5D5D5",
-  color: "black",
-  whiteSpace: "nowrap",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-  width: "200px",
-};
-const tableHeaderSx = {
-  color: "white",
-  whiteSpace: "nowrap",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-  width: "200px",
-};
+import { useMediaQuery, useTheme } from "@mui/material";
 
 export default function CommissionsTable() {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md")); // Mobile breakpoint
+
   const [from, setFrom] = React.useState<string>();
   const [to, setTo] = React.useState<string>();
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
   const [commissionsData, setCommissionsData] = React.useState<any>();
-  const [filteredCommissionsData, setFiltererdCommissionsData] =
+  const [filteredCommissionsData, setFilteredCommissionsData] =
     React.useState<any>();
+  const [userFilter, setUserFilter] = React.useState<string>("");
+  const [userOptions, setUserOptions] = React.useState<IUserGet[]>([]);
   const isAdmin = isUserAdmin();
+
   const fetchData = async () => {
     setIsLoading(true);
     const response = await CommissionApiService.getCommissions();
     setCommissionsData(response);
-    setFiltererdCommissionsData(response);
+    setFilteredCommissionsData(response);
     const downlines = await AccountApiService.getDownlines();
     setUserOptions(downlines);
     setIsLoading(false);
   };
-  const [userFilter, setUserFilter] = React.useState<string>("");
-  const [userOptions, setUserOptions] = React.useState<IUserGet[]>([]);
-  const isMobile = window.innerWidth <= 768;
-
-  const isMobileDiv = useMediaQuery("(max-width:1129px)");
 
   // Pagination state
   const [page, setPage] = React.useState(0);
@@ -101,22 +79,21 @@ export default function CommissionsTable() {
   const reset = async () => {
     setFrom(undefined);
     setTo(undefined);
+    setUserFilter("");
     const response = await CommissionApiService.getCommissions();
-    setFiltererdCommissionsData(response);
+    setFilteredCommissionsData(response);
   };
 
   const submit = async () => {
     if (!from || !to)
       return notify("Please specify date range", ToastType.ERROR);
     const arr = userFilter ? filteredCommissionsData : commissionsData;
-    setFiltererdCommissionsData(
+    setFilteredCommissionsData(
       arr.filter((e: any) => {
         const d = new Date(e.date);
         const fromD = new Date(from);
         const toD = new Date(to);
-        if (d >= fromD && d <= toD) {
-          return e;
-        }
+        return d >= fromD && d <= toD;
       })
     );
   };
@@ -124,238 +101,116 @@ export default function CommissionsTable() {
   if (isLoading)
     return (
       <div
-      // style={{
-      //   width: "100vw",
-      //   height: "100vh",
-      //   display: "flex",
-      //   justifyContent: "center",
-      //   alignItems: "center",
-      // }}
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
       >
         <CircularProgress size={55} />
       </div>
     );
-  if (isAdmin)
-    return (
-      <div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "15px" }}>
-          <TextField
-            sx={{ flex: "1 1 100%", marginTop: "15px" }}
-            fullWidth
-            label="Upline ID"
-            select
-            value={userFilter}
-            onChange={(e) => {
-              setUserFilter(e.target.value);
-              if (e.target.value !== undefined) {
-                setFiltererdCommissionsData(
-                  commissionsData.filter(
-                    (row: any) =>
-                      row.uplineEmail ===
-                      userOptions.find(
-                        (option) => option.id === parseInt(e.target.value)
-                      )?.email
-                  )
-                );
-              }
-            }}
-          >
-            {userOptions.map((user) => {
-              return (
+
+  return (
+    <div style={{ padding: "20px" }}>
+      {/* Filters */}
+      <Grid container spacing={2} alignItems="center">
+        {isAdmin && (
+          <Grid item xs={12} sm={6} md={12}>
+            <TextField
+              label="Upline ID"
+              select
+              fullWidth
+              value={userFilter}
+              onChange={(e) => {
+                setUserFilter(e.target.value);
+                if (e.target.value !== undefined) {
+                  setFilteredCommissionsData(
+                    commissionsData.filter(
+                      (row: any) =>
+                        row.uplineEmail ===
+                        userOptions.find(
+                          (option) => option.id === parseInt(e.target.value)
+                        )?.email
+                    )
+                  );
+                }
+              }}
+            >
+              {userOptions.map((user) => (
                 <MenuItem key={user.id} value={user.id}>
                   {user.firstName + " " + user.lastName}
                 </MenuItem>
-              );
-            })}
-          </TextField>
+              ))}
+            </TextField>
+          </Grid>
+        )}
+        <Grid item xs={12} sm={6} md={6}>
           <DatePicker
-            label="from"
-            sx={{ flex: "1 1 45%", marginTop: "15px" }}
+            label="From"
             value={from ? dayjs(from) : null}
-            name="dateFilter"
-            onChange={(value) => setFrom(dayjs(value).toDate().toDateString())}
+            onChange={(newValue) =>
+              setFrom(newValue ? newValue.toDate().toDateString() : undefined)
+            }
+            slotProps={{ textField: { fullWidth: true } }}
           />
+        </Grid>
+        <Grid item xs={12} sm={6} md={6}>
           <DatePicker
-            label="to"
-            sx={{ flex: "1 1 45%", marginTop: "15px" }}
+            label="To"
             value={to ? dayjs(to) : null}
-            name="dateFilter"
-            onChange={(value) => setTo(dayjs(value).toDate().toDateString())}
+            onChange={(newValue) =>
+              setTo(newValue ? newValue.toDate().toDateString() : undefined)
+            }
+            slotProps={{ textField: { fullWidth: true } }}
           />
+        </Grid>
+
+        {/* Buttons */}
+        <Grid item xs={12} sm={6} md={4}>
           <CustomButton
-            width="200px"
-            title="Reset"
+            title="RESET"
             onSubmit={reset}
             isLoading={false}
             disabled={false}
-            // sx={{ flex: "1 1 20%", marginTop: "15px" }}
           />
+        </Grid>
+        <Grid item xs={12} sm={6} md={4}>
           <CustomButton
-            width="200px"
-            title="Search"
+            title="SEARCH"
             onSubmit={submit}
             isLoading={false}
             disabled={false}
-            // sx={{ flex: "1 1 20%", marginTop: "15px" }}
           />
+        </Grid>
+        <Grid item xs={12} sm={6} md={4}>
           <CustomButton
-            width="200px"
-            title="Upload commission"
+            title="UPLOAD COMMISSIONS"
             onSubmit={() => navigate("/upload-commissions")}
             isLoading={false}
             disabled={false}
-            // sx={{ flex: "1 1 100%", marginTop: "15px" }}
           />
+        </Grid>
+        <Grid item xs={12} sm={6} md={4}>
           <CustomButton
-            width="200px"
-            title="Send monthly email"
+            title="SEND MONTHLY EMAIL"
             onSubmit={() => navigate("/send-monthly-email")}
             isLoading={false}
             disabled={false}
-            // sx={{ flex: "1 1 100%", marginTop: "15px" }}
           />
-
+        </Grid>
+        <Grid item xs={12} sm={6} md={4}>
           <CustomButton
-            width="250px"
-            title=" Upload commission test"
+            title="UPLOAD COMMISSION TEST"
             onSubmit={() => navigate("/upload-commissions-test")}
             isLoading={false}
             disabled={false}
           />
+        </Grid>
+      </Grid>
 
-          {/* <Button
-            style={{
-              background: "#050d31",
-              color: "white",
-              marginRight: "15px",
-            }}
-            onClick={() => navigate("/upload-commissions-test")}
-          >
-            Upload commission test
-          </Button> */}
-        </div>
-        <TableContainer component={Paper} style={{ marginTop: "40px" }}>
-          <Table sx={{ minWidth: 650 }} aria-label="transaction table">
-            <TableHead>
-              <TableRow>
-                <TableCell>Date</TableCell>
-                <TableCell align="left">Upline</TableCell>
-                <TableCell align="left">Downline</TableCell>
-                <TableCell align="right">Commission</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredCommissionsData && filteredCommissionsData.length > 0 ? (
-                <>
-                  {filteredCommissionsData
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((row: any, index: number) => {
-                      const sx =
-                        index % 2 === 0 ? tableRowEvenSx : tableRowOddSx;
-                      return (
-                        <TableRow
-                          key={index}
-                          sx={{
-                            "&:last-child td, &:last-child th": { border: 0 },
-                          }}
-                        >
-                          <TableCell component="th" scope="row">
-                            {asFormattedDate(row.date)}
-                          </TableCell>
-                          <TableCell align="left">
-                            {row.uplineFirstName + " " + row.uplineLastName}
-                          </TableCell>
-                          <TableCell align="left">
-                            {row.downlineFirstName + " " + row.downlineLastName}
-                          </TableCell>
-                          <TableCell align="right">
-                            {row.commissionValue}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  <TableRow>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
-                    <TableCell align="right">Total: </TableCell>
-                    <TableCell align="right">
-                      {filteredCommissionsData
-                        .reduce(
-                          (accumulator: number, currentValue: any) =>
-                            accumulator +
-                            parseFloat(currentValue.commissionValue),
-                          0
-                        )
-                        .toFixed(2)}
-                    </TableCell>
-                  </TableRow>
-                </>
-              ) : (
-                <span style={{ color: "white" }}>
-                  No Commissions for this date, try changing the filter
-                </span>
-              )}
-            </TableBody>
-          </Table>
-          <TablePagination
-            rowsPerPageOptions={[10, 25, 50, 100]}
-            component="div"
-            count={filteredCommissionsData.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-          />
-        </TableContainer>
-      </div>
-    );
-  return (
-    <div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "15px" }}>
-        <DatePicker
-          label="from"
-          sx={{
-            flex: "1 1 45%",
-            marginTop: isMobile ? "5px" : "25px",
-            marginBottom: isMobile ? "5px" : "25px",
-            marginRight: isMobile ? "0px" : "15px",
-          }}
-          value={from ? from : null}
-          name="dateFilter"
-          onChange={(value) => setFrom(dayjs(value).toDate().toDateString())}
-        />
-        <DatePicker
-          label="to"
-          sx={{
-            flex: "1 1 45%",
-            marginTop: "25px",
-            marginBottom: "25px",
-          }}
-          value={to ? to : null}
-          name="dateFilter"
-          onChange={(value) => setTo(dayjs(value).toDate().toDateString())}
-        />
-        <Button
-          style={{
-            background: "red",
-            color: "white",
-            height: isMobile ? "100%" : "50px",
-          }}
-          onClick={() => reset()}
-        >
-          Reset
-        </Button>
-        <Button
-          style={{
-            background: "#050d31",
-            color: "white",
-            height: isMobile ? "100%" : "50px",
-          }}
-          onClick={() => submit()}
-        >
-          Search
-        </Button>
-      </div>
+      {/* Table */}
       <TableContainer component={Paper} style={{ marginTop: "40px" }}>
         <Table sx={{ minWidth: 650 }} aria-label="transaction table">
           <TableHead>
@@ -371,40 +226,22 @@ export default function CommissionsTable() {
               <>
                 {filteredCommissionsData
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((row: any, index: number) => {
-                    const sx = index % 2 === 0 ? tableRowEvenSx : tableRowOddSx;
-                    return (
-                      <TableRow
-                        key={index}
-                        sx={{
-                          "&:last-child td, &:last-child th": { border: 0 },
-                        }}
-                      >
-                        <TableCell component="th" scope="row">
-                          {asFormattedDate(row.date)}
-                        </TableCell>
-                        <TableCell align="left">
-                          {row.uplineFirstName + " " + row.uplineLastName}
-                        </TableCell>
-                        <TableCell align="left">
-                          {row.downlineFirstName + " " + row.downlineLastName}
-                        </TableCell>
-                        <TableCell align="right">
-                          {row.commissionValue}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
+                  .map((row: any, index: number) => (
+                    <TableRow key={index}>
+                      <TableCell>{asFormattedDate(row.date)}</TableCell>
+                      <TableCell align="left">{`${row.uplineFirstName} ${row.uplineLastName}`}</TableCell>
+                      <TableCell align="left">{`${row.downlineFirstName} ${row.downlineLastName}`}</TableCell>
+                      <TableCell align="right">{row.commissionValue}</TableCell>
+                    </TableRow>
+                  ))}
                 <TableRow>
-                  <TableCell></TableCell>
-                  <TableCell></TableCell>
+                  <TableCell colSpan={2} />
                   <TableCell align="right">Total: </TableCell>
                   <TableCell align="right">
                     {filteredCommissionsData
                       .reduce(
-                        (accumulator: number, currentValue: any) =>
-                          accumulator +
-                          parseFloat(currentValue.commissionValue),
+                        (acc: number, curr: any) =>
+                          acc + parseFloat(curr.commissionValue),
                         0
                       )
                       .toFixed(2)}
@@ -412,9 +249,7 @@ export default function CommissionsTable() {
                 </TableRow>
               </>
             ) : (
-              <span style={{ color: "white" }}>
-                No Commissions for this date, try changing the filter
-              </span>
+              <span>No Commissions for this date, try changing the filter</span>
             )}
           </TableBody>
         </Table>

@@ -7,6 +7,7 @@ import {
   Typography,
   Fade,
   Zoom,
+  Grid,
 } from "@mui/material";
 import classes from "./styles.module.css";
 import { ToastType, notify } from "../../utils/helpers";
@@ -40,8 +41,7 @@ function EditAccountForm() {
 
   useEffect(() => {
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [id]);
 
   const handleChange = (e: any) => {
     const { name, value } = e.target;
@@ -96,84 +96,88 @@ function EditAccountForm() {
               Edit Account
             </Typography>
             <form onSubmit={handleSubmit} className={classes.form}>
-              <TextField
-                label="MT5 ID"
-                type="string"
-                name="md5Id"
-                value={formData.md5Id}
-                required
-                onChange={handleChange}
-                variant="filled"
-                fullWidth
-                margin="normal"
-              />
-              <TextField
-                label="Email"
-                type="email"
-                name="email"
-                error={!!emailError}
-                helperText={emailError}
-                value={formData.email}
-                onChange={handleChange}
-                required
-                variant="filled"
-                fullWidth
-                margin="normal"
-                InputLabelProps={{
-                  shrink: !!formData.email,
-                }}
-              />
-              <TextField
-                label="Phone number"
-                type="number"
-                name="phoneNumber"
-                value={formData.phoneNumber}
-                onChange={handleChange}
-                required
-                variant="filled"
-                fullWidth
-                margin="normal"
-              />
-              <TextField
-                label="Username"
-                type="text"
-                name="username"
-                value={formData.username}
-                onChange={handleChange}
-                required
-                variant="filled"
-                fullWidth
-                margin="normal"
-              />
-              <TextField
-                label="First Name"
-                type="text"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleChange}
-                variant="filled"
-                required
-                fullWidth
-                margin="normal"
-              />
-              <TextField
-                label="Last Name"
-                type="text"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleChange}
-                variant="filled"
-                required
-                fullWidth
-                margin="normal"
-              />
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <TextField
+                    label="MT5 ID"
+                    name="md5Id"
+                    value={formData.md5Id}
+                    onChange={handleChange}
+                    variant="outlined" // Use outlined style for better visibility
+                    fullWidth
+                    required
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    label="Email"
+                    name="email"
+                    error={!!emailError}
+                    helperText={emailError}
+                    value={formData.email}
+                    onChange={handleChange}
+                    variant="outlined" // Use outlined style
+                    fullWidth
+                    required
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    label="Phone number"
+                    name="phoneNumber"
+                    value={formData.phoneNumber}
+                    onChange={handleChange}
+                    variant="outlined"
+                    fullWidth
+                    required
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    label="Username"
+                    name="username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    variant="outlined"
+                    fullWidth
+                    required
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="First Name"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    variant="outlined"
+                    fullWidth
+                    required
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label="Last Name"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    variant="outlined"
+                    fullWidth
+                    required
+                  />
+                </Grid>
+              </Grid>
               <Button
                 className={classes.submitButton}
-                sx={{ marginTop: "25px" }}
+                sx={{
+                  marginTop: "25px",
+                  backgroundColor: "#007bff", // Custom button color
+                  color: "white",
+                  '&:hover': { backgroundColor: "#0056b3" }, // Hover effect
+                  padding: "12px 20px",
+                }}
                 disabled={isDisabled() || !!emailError}
                 type="submit"
                 variant="contained"
-                color="primary"
               >
                 Submit
               </Button>

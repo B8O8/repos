@@ -11,6 +11,7 @@ export type UserUpdateDTO = {
   password?: string;         // Add password field for updates
   resetToken?: string | null;       // Token for password reset
   resetTokenExpiry?: string | null; // Expiry for password reset token
+  brokerId?: number;
 };
 
 export type UserInsertDTO = {
@@ -28,6 +29,7 @@ export type UserInsertDTO = {
   cashout: number;
   resetToken?: string;       // Optional reset token for new users
   resetTokenExpiry?: string ; // Optional token expiry for new users
+  brokerId?: number;
 };
 
 export type UserGetDTO = {
@@ -54,4 +56,5 @@ export type UserGetDTO = {
   uplinePhoneNumber?: string;
   resetToken?: string;       // Token for password reset
   resetTokenExpiry?: string ; // Token expiry for password reset
+  brokerId?: number;
 };

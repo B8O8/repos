@@ -1,45 +1,34 @@
-import * as React from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import { isUserAdmin } from "../../utils/helpers";
 import {
-  IconButton,
+  Grid,
   Paper,
-  SxProps,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Tooltip,
   TablePagination,
+  IconButton,
   TextField,
-  Grid,
-  Menu,
-  MenuItem,
-  useMediaQuery,
+  Tooltip,
   useTheme,
+  useMediaQuery,
 } from "@mui/material";
-import { levelFilterOption } from "./TableData";
+import { isUserAdmin } from "../../utils/helpers";
 import DeleteIcon from "@mui/icons-material/Delete";
-import LockResetIcon from "@mui/icons-material/LockReset";
-import DeleteDialog from "./Dialogs/DeleteDialog";
 import EditIcon from "@mui/icons-material/Edit";
+import LockResetIcon from "@mui/icons-material/LockReset";
 import LanIcon from "@mui/icons-material/Lan";
-import ResetPasswordDialog from "./Dialogs/ResetPasswordDialog";
 import LevelFilter from "./LevelFilter";
+import CustomButton from "../GenericComponents/CustomButton";
 import AccountApiService from "../../utils/apis/accounts";
 import { IUserGet } from "../../utils/interfaces/IUser";
 import { ROUTES } from "../../utils/routes";
-import CustomButton from "../GenericComponents/CustomButton";
-import "./styles.module.css";
-
-const tableContainerSx: SxProps = {
-  width: "95%",
-  marginLeft: "2.5%",
-  marginTop: "5px",
-  marginBottom: "5vh",
-};
+import DeleteDialog from "./Dialogs/DeleteDialog";
+import ResetPasswordDialog from "./Dialogs/ResetPasswordDialog";
+import { levelFilterOption } from "./TableData";
 
 export default function ChildrenTable() {
   const navigate = useNavigate();
@@ -56,7 +45,6 @@ export default function ChildrenTable() {
   const [rowsPerPage, setRowsPerPage] = React.useState<number>(10);
   const [searchQuery, setSearchQuery] = React.useState<string>("");
 
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -105,24 +93,17 @@ export default function ChildrenTable() {
     setSearchQuery(event.target.value);
   };
 
-  const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
   return (
-    <div className="children-table-container">
+    <div>
       <Grid
         container
         spacing={2}
         alignItems="center"
-        className="search-add-container"
+        justifyContent="space-between"
+        sx={{ marginTop: 5, padding: "0 16px" }}
       >
         {!isAdmin && (
-          <Grid item xs={12} sm={6} md={4} className="grid-item">
+          <Grid item xs={12} sm={6} md={4}>
             <LevelFilter
               options={levelFilterOption}
               selectedLevel={levelFilter}
@@ -130,7 +111,7 @@ export default function ChildrenTable() {
             />
           </Grid>
         )}
-        <Grid item xs={12} sm={6} md={4} className="grid-item">
+        <Grid item xs={12} sm={6} md={4}>
           <TextField
             label="Search"
             variant="outlined"
@@ -139,177 +120,90 @@ export default function ChildrenTable() {
             onChange={handleSearchChange}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={4} className="grid-item">
+        <Grid item xs={12} sm={6} md={4}>
           <CustomButton
-            marginLeft="20px"
             title="Add"
             onSubmit={() => navigate(ROUTES.ROUTE_ADD_ACCOUNT)}
             isLoading={false}
             disabled={false}
-            width="100%"
+          
           />
         </Grid>
       </Grid>
-      {/* Table Section */}
-      <div className="table-wrapper">
-        <TableContainer component={Paper} className="table-container">
-          <Table
-            className="table"
-            sx={{
-              minWidth: isMobile ? 300 : 1000,
-            }} /* Adjust minWidth for mobile */
-            aria-label="transaction table"
-          >
-            <TableHead>
-              <TableRow>
-                {!isAdmin && <TableCell>Level</TableCell>}
-                <TableCell align="left">Fullname</TableCell>
-                <TableCell align="left">MT5 ID</TableCell>
-                <TableCell align="left">Phone</TableCell>
-                <TableCell align="left">Email</TableCell>
-                <TableCell align="left">Upline Fullname</TableCell>
-                {!!isAdmin && <TableCell align="left">Actions</TableCell>}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredRows
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row) => (
-                  <TableRow
-                    key={row.id}
-                    sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                  >
-                    {!isAdmin && (
-                      <TableCell component="th" scope="row">
-                        {row.level}
-                      </TableCell>
-                    )}
-                    <TableCell align="left">{`${row.firstName} ${row.lastName}`}</TableCell>
-                    <TableCell align="left">{row.md5Id}</TableCell>
-                    <TableCell align="left">{row.phoneNumber}</TableCell>
-                    <TableCell align="left">{row.email}</TableCell>
-                    <TableCell align="left">
-                      {(row.uplineFirstName || "") + (row.uplineLastName || "")}
+
+      <TableContainer
+        component={Paper}
+        sx={{ margin: "20px auto", maxWidth: "95vw", overflowX: "auto" }}
+      >
+        <Table sx={{ minWidth: 650 }}>
+          <TableHead>
+            <TableRow>
+              {!isAdmin && <TableCell>Level</TableCell>}
+              <TableCell align="left">Fullname</TableCell>
+              <TableCell align="left">MT5 ID</TableCell>
+              <TableCell align="left">Phone</TableCell>
+              <TableCell align="left">Email</TableCell>
+              <TableCell align="left">Upline Fullname</TableCell>
+              {!!isAdmin && <TableCell align="left">Actions</TableCell>}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {filteredRows
+              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              .map((row) => (
+                <TableRow key={row.id}>
+                  {!isAdmin && <TableCell>{row.level}</TableCell>}
+                  <TableCell>{`${row.firstName} ${row.lastName}`}</TableCell>
+                  <TableCell>{row.md5Id}</TableCell>
+                  <TableCell>{row.phoneNumber}</TableCell>
+                  <TableCell>{row.email}</TableCell>
+                  <TableCell>
+                    {(row.uplineFirstName || "") + (row.uplineLastName || "")}
+                  </TableCell>
+                  {isAdmin && (
+                    <TableCell>
+                      <Tooltip title="Edit User">
+                        <IconButton onClick={() => navigate(`${ROUTES.ROUTE_EDIT_ACCOUNT}/${row.id}`)}>
+                          <EditIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Reset Password">
+                        <IconButton onClick={() => {
+                          setSelectedId(row.id);
+                          setResetPasswordDialogOpen(true);
+                        }}>
+                          <LockResetIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete User">
+                        <IconButton onClick={() => {
+                          setSelectedId(row.id);
+                          setDeleteDialogOpen(true);
+                        }}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Edit Uplines">
+                        <IconButton onClick={() => navigate(`${ROUTES.ROUTE_EDIT_ACCOUNT_RELATIONSHIPS}/${row.id}`)}>
+                          <LanIcon />
+                        </IconButton>
+                      </Tooltip>
                     </TableCell>
-                    {isAdmin && (
-                      <TableCell align="left">
-                        {isMobile ? (
-                          <>
-                            <IconButton onClick={handleMenuClick}>
-                              <EditIcon />
-                            </IconButton>
-                            <Menu
-                              anchorEl={anchorEl}
-                              open={Boolean(anchorEl)}
-                              onClose={handleMenuClose}
-                            >
-                              <MenuItem
-                                onClick={() => {
-                                  setSelectedId(row.id);
-                                  setDeleteDialogOpen(true);
-                                  handleMenuClose();
-                                }}
-                              >
-                                <DeleteIcon /> Delete
-                              </MenuItem>
-                              <MenuItem
-                                onClick={() => {
-                                  setSelectedId(row.id);
-                                  setResetPasswordDialogOpen(true);
-                                  handleMenuClose();
-                                }}
-                              >
-                                <LockResetIcon /> Reset password
-                              </MenuItem>
-                              <MenuItem
-                                onClick={() => {
-                                  setSelectedId(row.id);
-                                  navigate(
-                                    `${ROUTES.ROUTE_EDIT_ACCOUNT}/${row.id}`
-                                  );
-                                  handleMenuClose();
-                                }}
-                              >
-                                <EditIcon /> Edit User
-                              </MenuItem>
-                              <MenuItem
-                                onClick={() => {
-                                  setSelectedId(row.id);
-                                  navigate(
-                                    `${ROUTES.ROUTE_EDIT_ACCOUNT_RELATIONSHIPS}/${row.id}`
-                                  );
-                                  handleMenuClose();
-                                }}
-                              >
-                                <LanIcon /> Edit Uplines
-                              </MenuItem>
-                            </Menu>
-                          </>
-                        ) : (
-                          <>
-                            <Tooltip title="Delete">
-                              <IconButton
-                                onClick={() => {
-                                  setSelectedId(row.id);
-                                  setDeleteDialogOpen(true);
-                                }}
-                              >
-                                <DeleteIcon />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Reset password">
-                              <IconButton
-                                onClick={() => {
-                                  setSelectedId(row.id);
-                                  setResetPasswordDialogOpen(true);
-                                }}
-                              >
-                                <LockResetIcon />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Edit User">
-                              <IconButton
-                                onClick={() => {
-                                  setSelectedId(row.id);
-                                  navigate(
-                                    `${ROUTES.ROUTE_EDIT_ACCOUNT}/${row.id}`
-                                  );
-                                }}
-                              >
-                                <EditIcon />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Edit Uplines">
-                              <IconButton
-                                onClick={() => {
-                                  setSelectedId(row.id);
-                                  navigate(
-                                    `${ROUTES.ROUTE_EDIT_ACCOUNT_RELATIONSHIPS}/${row.id}`
-                                  );
-                                }}
-                              >
-                                <LanIcon />
-                              </IconButton>
-                            </Tooltip>
-                          </>
-                        )}
-                      </TableCell>
-                    )}
-                  </TableRow>
-                ))}
-            </TableBody>
-          </Table>
-          <TablePagination
-            rowsPerPageOptions={[10, 25, 50, 100]}
-            component="div"
-            count={filteredRows.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-          />
-        </TableContainer>
-      </div>
+                  )}
+                </TableRow>
+              ))}
+          </TableBody>
+        </Table>
+        <TablePagination
+          rowsPerPageOptions={[10, 25, 50, 100]}
+          component="div"
+          count={filteredRows.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
+      </TableContainer>
       {deleteDialogOpen && (
         <DeleteDialog
           userId={selectedId}

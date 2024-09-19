@@ -19,6 +19,7 @@ export type TCommissionRecordSet = {
   commissionDate?: string; // Assuming you want to handle the date as a string
   dispensedCommissionUSD?: number;
   userCashoutUSD?: number;
+  ID?: number;
 };
 
 export type TUserCommissionSet = {

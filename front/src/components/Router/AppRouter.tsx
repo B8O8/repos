@@ -1,11 +1,5 @@
 import React, { useEffect } from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  useLocation,
-  useNavigate,
-} from "react-router-dom";
+import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import AddAccountForm from "../AddAccountForm/AddAccountForm";
 import { ToastContainer } from "react-toastify";
 import LoginForm from "../LoginForm/LoginForm";
@@ -37,7 +31,6 @@ const AppRouter = () => {
   const isLoggedIn = localStorage.getItem("token");
 
   useEffect(() => {
-    // Bypass redirection for the 'forgot-password' and 'reset-password' routes
     if (
       location.pathname === "/forgot-password" ||
       location.pathname.startsWith("/change-password") ||
@@ -54,12 +47,13 @@ const AppRouter = () => {
         navigate("/");
       }
     }
-  }, [location]);
+  }, [location, isLoggedIn, navigate]); // Add missing dependencies
 
   return (
     <div className="app-container">
       <ToastContainer />
-      {path !== "/" &&
+      {path !== ROUTES.ROUTE_LOGIN &&
+        path !== "/" &&
         path !== "/forgot-password" &&
         !path.startsWith("/change-password") &&
         path !== "/link-expired" && (
@@ -68,14 +62,21 @@ const AppRouter = () => {
             setIsMenuOpen={setIsMenuOpen}
           />
         )}
-      {isMobile && (
-        <IconButton
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className={`menu-icon-button ${isMenuOpen ? "open" : ""}`}
-        >
-          <MenuIcon />
-        </IconButton>
-      )}
+
+      {isMobile &&
+        path !== ROUTES.ROUTE_LOGIN &&
+        path !== "/" &&
+        path !== "/forgot-password" &&
+        !path.startsWith("/change-password") &&
+        path !== "/link-expired" && (
+          <IconButton
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className={`menu-icon-button ${isMenuOpen ? "open" : ""}`}
+          >
+            <MenuIcon />
+          </IconButton>
+        )}
+
       <div
         className={`content-container ${
           isLoggedIn ? "logged-in" : "full-width"

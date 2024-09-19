@@ -77,7 +77,7 @@ static async getAllUsersCommissions(weekDates: {firstDay: string, lastDay: strin
       monthStart: monthDates.firstDay,
       monthEnd: monthDates.lastDay
     });
-    
+    console.log("response", response.data);
     return response.data; // Expect the backend to return a list of users with their commissions
   } catch (error: any) {
     notify(error.response?.data || "Something went wrong", error);

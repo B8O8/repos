@@ -34,7 +34,6 @@ function FloatingNavigationBarButton({ isOpen, setIsMenuOpen }: IProps) {
       setProfile(data);
     } catch (error: any) {
       console.error("Error in fetchData:", error.message || error);
-      // Optionally, you can set an error state here to display an error message to the user
     }
   };
   React.useEffect(() => {

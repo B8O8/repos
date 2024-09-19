@@ -53,7 +53,7 @@ class UserDTO {
       if (value === null) {
         // Handle null values by setting the field to NULL (without quotes)
         str += `${key}=NULL,`;
-      } else if (typeof value === 'string') {
+      } else if (typeof value === "string") {
         // Escape string values and wrap in single quotes
         str += `${key}='${value}',`;
       } else {
@@ -65,7 +65,6 @@ class UserDTO {
     str = str.slice(0, -1);
     return str;
   }
-  
 
   async updateById(
     id: number,
@@ -144,6 +143,37 @@ class UserDTO {
     const exists = await this.getById(id);
     if (!exists) return true;
     return false;
+  }
+
+  async updateBrokerId(userId: number, brokerId: string): Promise<boolean> {
+    const queryString = `
+        UPDATE users 
+        SET brokerId = ? 
+        WHERE id = ? 
+        AND (brokerId IS NULL OR brokerId = '')
+    `;
+
+    try {
+      // Log the brokerId and userId to see what is being passed
+      console.log(
+        `Attempting to update brokerId for userId: ${userId} with brokerId: ${brokerId}`
+      );
+
+      // ResultSetHeader is not an array, so the type is just ResultSetHeader
+      const [result]: [ResultSetHeader, any] = await pool.query(queryString, [
+        brokerId,
+        userId,
+      ]);
+
+      // Check if any rows were affected (meaning the update was successful)
+      if (result.affectedRows > 0) {
+        return true;
+      } else {
+        return false; // No rows were updated, meaning the brokerId was already set or no match was found
+      }
+    } catch (error) {
+      throw new Error("Error updating brokerId");
+    }
   }
 }
 

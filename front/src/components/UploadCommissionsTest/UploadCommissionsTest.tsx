@@ -123,13 +123,14 @@ function UploadCsvTest() {
           />
         </div>
 
-        {/* Render table with all fields of non-existent users, filtering out rows where Lots = 0 */}
+        {/* Render table with all fields of non-existent users, including ID */}
         {nonExistentUsers.length > 0 ? (
           <div className="table-container"> {/* Added class for table container */}
             <h3 style={{ marginTop: "50px" }}>Non-existent Users:</h3>
             <table className={styles.userTable}>
               <thead>
                 <tr>
+                  <th>ID</th> {/* New ID column */}
                   <th>Level</th>
                   <th>First Name</th>
                   <th>Last Name</th>
@@ -155,6 +156,7 @@ function UploadCsvTest() {
                   .filter((user) => parseFloat(user.Lots.trim()) !== 0) // Filter out users where Lots = 0
                   .map((user, index) => (
                     <tr key={index}>
+                      <td>{user.ID || "-"}</td> {/* Display ID field */}
                       <td>{user.Level || "-"}</td>
                       <td>{user.FirstName || "-"}</td>
                       <td>{user.LastName || "-"}</td>
